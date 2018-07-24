@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #wrap{
+            position: relative;
+        }
+        p:nth-of-type(5) span{
+            float: left;
+        }
+        .li_span{
+            display: block;
+            width: 80px;
+            float: left;
+        }
+        form{
+            height: 250px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .seeBox{
+            height: 300px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        ul{
+            position: absolute;
+            top: 300px;
+            left: 20px;
+        }
+        p{
+            line-height: 40px;
+        }
+        .active{
+            background: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrap">
+        <form v-if="showBox == 0">
+            <p><span>姓名：</span><input type="text" v-model="msg"></p>
+            <p>
+                <span>性别：</span>
+                <label v-for="item in sexArr">
+                    <input type="radio" :value="item" v-model="sex">{{item}}
+                </label>
+            </p>
+            <p>
+                <span>感兴趣的培训方向：</span>
+                <label v-for="item in courseArr">
+                    <input type="checkbox" :value="item" v-model="arr_course">{{item}}
+                </label>
+            </p>
+            <p>
+                <span>毕业年份：</span>
+                <select v-model="year">
+                    <option v-for="item in yearArr" :value="item">{{item}}</option>
+                </select>
+            </p>
+            <p>
+                <span>备注：</span>
+                <textarea cols="30" rows="5" v-model="massage"></textarea>
+            </p>
+            <p>
+                <button @click.prevent="addBtn">添加</button>
+                <button @click.prevent="cancelBtn">取消</button>
+            </p>
+        </form>
+
+        <div class="seeBox" v-else-if="showBox == 1">
+            <!-- <p v-for="(value,key) in objData">{{key}}：{{value}}</p> -->
+            <p>姓名：{{objData.msg}}</p>
+            <p>性别：{{objData.sex}}</p>
+            <p>方向：{{objData.arr_course}}</p>
+            <p>毕业时间：{{objData.year}}</p>
+            <p>备注：{{objData.massage}}</p>
+            <p><button @click="seeComplete">完成查看</button></p>
+        </div>
+
+        <div class="changeBox" v-else-if="showBox == 2">
+            <p><span>姓名：</span><input type="text" v-model="changeData.msg"></p>
+            <p>
+                <span>性别：</span>
+                <label v-for="item in sexArr">
+                    <input type="radio" :value="item" v-model="changeData.sex">{{item}}
+                </label>
+            </p>
+            <p>
+                <span>感兴趣的培训方向：</span>
+                <label v-for="item in courseArr">
+                    <input type="checkbox" :value="item" v-model="changeData.arr_course">{{item}}
+                </label>
+            </p>
+            <p>
+                <span>毕业年份：</span>
+                <select v-model="changeData.year">
+                    <option v-for="item in yearArr" :value="item">{{item}}</option>
+                </select>
+            </p>
+            <p>
+                <span>备注：</span>
+                <textarea cols="30" rows="5" v-model="changeData.massage"></textarea>
+            </p>
+            <p>
+                <button @click.prevent="changeCompleteBtn">完成修改</button>
+                <button @click.prevent="changeCancelBtn">取消修改</button>
+            </p>
+        </div>
+        <ul>
+            <li 
+                v-for="(value,index) in arr"
+                @click="setMark(index)"
+                :class="{active:selectIndex == value.id}"
+            >
+                <span class="li_span">{{value.msg}}</span>
+                <span>
+                    <button @click.prevent='delBtn(index)'>删除</button>
+                    <button @click.prevent='changeBtn(index)'>修改</button>
+                    <button @click.prevent='seeBtn(index)'>查看</button>
+                </span>
+            </li>
+        </ul>
+
+    </div>
+    <script src="js/vue.min.js"></script>
+    <script>
+
+        var vm = new Vue({
+            el:'#wrap',
+            data:{
+                sexArr:['男','女'],
+                courseArr:['HTML5','python','java','bigData'],
+                yearArr:[],
+                msg:'',
+                sex:"男",
+                arr_course:['HTML5'],
+                year:2015,
+                massage:'',
+                arr:[],
+                objData:{},
+                showBox:0,
+                index:-1,
+                changeData:{},
+                personID:1,
+                selectIndex:-1,
+            },
+            methods:{
+
+                save:function(){
+                    localStorage.setItem('list',JSON.stringify(this.arr));
+                    localStorage.setItem('id',this.personID);
+                },
+
+                addBtn:function(){
+                    var obj = {
+                        id:this.personID++,
+                        msg:this.msg,
+                        sex:this.sex,
+                        arr_course:this.arr_course,
+                        year:this.year,
+                        massage:this.massage,
+                    }
+                    this.arr.push(obj);
+                    this.save();
+                    this.cancelBtn();
+                },
+
+                cancelBtn:function(){
+                    this.msg='';
+                    this.sex="男";
+                    this.arr_course=['HTML5'];
+                    this.year=2015;
+                    this.massage='';
+                },
+
+                delBtn:function(index){
+                    this.arr.splice(index,1);
+                    this.save();
+                },
+
+                seeBtn:function(index){
+                    // console.log(index)
+                    this.objData = this.arr[index];
+                    // console.log(this.objData)
+                    this.showBox = 1;
+                },
+
+                seeComplete:function(){
+                    this.showBox = 0;
+                },
+
+                changeBtn:function(index){
+                    this.changeData = this.arr[index];
+                    // console.log(this.changeData)
+                    this.changeData = {...this.changeData} ;
+                    this.showBox = 2;
+                    this.index = index;
+                },
+
+                changeCompleteBtn:function(){
+                    this.showBox = 0;
+                    this.arr[this.index] = this.changeData;
+                    this.save();
+                    this.cancelBtn();
+                },
+
+                changeCancelBtn:function(){
+                    this.showBox = 0;
+                    this.cancelBtn();
+                },
+                
+                setMark:function(index){
+                    this.selectIndex = this.arr[index].id;
+                },
+            }
+        })
+
+        for(var i = 0; i <= 10; i++){
+            vm.yearArr.push(2010 + i);
+        }
+        if(localStorage.getItem('list')){
+            vm.arr = JSON.parse(localStorage.getItem('list'));
+        }
+        if(localStorage.getItem('id')){
+            vm.personID = localStorage.getItem('id');
+        }
+        
+    </script>
+</body>
+</html>
